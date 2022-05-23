@@ -34,58 +34,69 @@ function App() {
     }
   };
   const deleteTodo = async (id) => {
+    const { data } = await axios.delete(API_BASE + "/todo/delete/" + id);
     try {
-      const { data } = await axios.delete(API_BASE + "/todo/delete/" + id);
       setTodos((todos) =>
         todos.filter((todo) => {
           return todo._id !== data._id;
         })
       );
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log(error);
     }
   };
 
   const addTodo = async () => {
-    try {
-      const { data } = await axios.post(
-        API_BASE + "/todo/new/",
-        {
-          text: newTodo,
-        },
-        {
-          headers: { "Content-Type": "application/json;charset=UTF-8" },
-        }
-      );
-      setTodos([...todos, data]);
-      setPopActive(false);
-      setNewTodo("");
-    } catch (e) {
-      console.log(e);
+    if (newTodo) {
+      try {
+        const { data } = await axios.post(
+          API_BASE + "/todo/new/",
+          {
+            text: newTodo,
+          },
+          {
+            headers: { "Content-Type": "application/json;charset=UTF-8" },
+          }
+        );
+        setTodos([...todos, data]);
+        setPopActive(false);
+        setNewTodo("");
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      setNewTodo("Please type something");
     }
   };
 
   return (
     <div className="App">
       <h1>Hello, Todo</h1>
-      <h4>Your Taskss</h4>
+      <h4>Your Tasks</h4>
 
       <div className="todos">
-        {todos.map((todo) => {
-          return (
-            <div
-              className={"todo " + (todo.complete ? "is-complete" : "")}
-              key={todo._id}
-              onClick={() => completeTodo(todo._id)}
-            >
-              <div className="checkbox"></div>
-              <div className="text">{todo.text}</div>
-              <div className="delete-todo" onClick={() => deleteTodo(todo._id)}>
-                x
+        {todos.length > 0 ? (
+          todos.map((todo) => {
+            return (
+              <div
+                className={"todo " + (todo.complete ? "is-complete" : "")}
+                key={todo._id}
+                onClick={() => completeTodo(todo._id)}
+              >
+                <div className="checkbox"></div>
+                <div className="text">{todo.text}</div>
+                <div
+                  className="delete-todo"
+                  onClick={() => deleteTodo(todo._id)}
+                >
+                  x
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <p className="text-3xl font-bold underline">No tasks now</p>
+        )}
       </div>
       <div className="addPopup" onClick={() => setPopActive(true)}>
         +

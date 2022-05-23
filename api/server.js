@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const Todo = require("./models/Todo");
 
 const app = express();
 
@@ -15,15 +16,12 @@ mongoose
   .then(() => console.log("Connected to DB"))
   .catch(console.error);
 
-const Todo = require("./models/Todo");
-
 app.get("/todos", async (req, res) => {
   const todos = await Todo.find();
   res.json(todos);
 });
 
 app.post("/todo/new", (req, res) => {
-  console.log(req);
   const todo = new Todo({
     text: req.body.text,
   });
@@ -32,8 +30,12 @@ app.post("/todo/new", (req, res) => {
 });
 
 app.delete("/todo/delete/:id", async (req, res) => {
-  const result = await Todo.findByIdAndDelete(req.params.id);
-  res.json(result);
+  const todo = await Todo.findById(req.params.id);
+
+  if (!todo) return res.status(404).send("Todo not found...");
+  const deletedTodo = await Todo.findByIdAndDelete(req.params.id);
+
+  res.json(deletedTodo);
 });
 
 app.get("/todo/complete/:id", async (req, res) => {
@@ -42,5 +44,5 @@ app.get("/todo/complete/:id", async (req, res) => {
   todo.save();
   res.json(todo);
 });
-
-app.listen(3001, () => console.log("Server started on port 3001"));
+const port = process.env.PORT || 3001;
+app.listen(port, () => console.log(`Express server started on port ${port}`));
